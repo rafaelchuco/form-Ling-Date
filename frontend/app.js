@@ -84,6 +84,8 @@ function initAdmin() {
 
   let chartInstance = null;
   let cacheRows = [];
+  let lastTableSignature = '';
+  let dashboardLoadInFlight = false;
 
   const setAuthedView = (authed) => {
     loginSection.classList.toggle('hidden', authed);
@@ -92,8 +94,15 @@ function initAdmin() {
 
   const isAuthed = () => !!localStorage.getItem('auth');
 
+  const buildRowsSignature = (rows) =>
+    rows.map((row) => `${row.id || ''}:${row.created_at || ''}`).join('|');
+
   const renderTable = (rows) => {
     const tbody = byId('tablaRespuestas');
+    const signature = buildRowsSignature(rows);
+
+    if (signature === lastTableSignature) return;
+    lastTableSignature = signature;
 
     if (!rows.length) {
       tbody.innerHTML = '<tr><td colspan="7" class="px-2 py-4 text-center text-muted">Sin resultados</td></tr>';
@@ -127,65 +136,78 @@ function initAdmin() {
     const chartNode = byId('statsChart');
     if (!chartNode) return;
 
-    if (chartInstance) chartInstance.destroy();
+    const nextData = [
+      stats.porcentaje_necesidad,
+      stats.porcentaje_problema_idioma,
+      stats.porcentaje_interes,
+      stats.porcentaje_pago
+    ];
 
-    chartInstance = new Chart(chartNode, {
-      type: 'bar',
-      data: {
-        labels: ['Necesidad', 'Problema idioma', 'Interés', 'Pago'],
-        datasets: [
-          {
-            label: '%',
-            data: [
-              stats.porcentaje_necesidad,
-              stats.porcentaje_problema_idioma,
-              stats.porcentaje_interes,
-              stats.porcentaje_pago
-            ],
-            backgroundColor: ['#f07585', '#f0b050', '#5aad7a', '#e0556a'],
-            borderRadius: 10,
-            borderSkipped: false
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: 100,
-            ticks: { color: '#8a8278' },
-            grid: { color: 'rgba(138,130,120,0.2)' }
-          },
-          x: {
-            ticks: { color: '#8a8278' },
-            grid: { display: false }
-          }
+    if (!chartInstance) {
+      chartInstance = new Chart(chartNode, {
+        type: 'bar',
+        data: {
+          labels: ['Necesidad', 'Problema idioma', 'Interés', 'Pago'],
+          datasets: [
+            {
+              label: '%',
+              data: nextData,
+              backgroundColor: ['#f07585', '#f0b050', '#5aad7a', '#e0556a'],
+              borderRadius: 10,
+              borderSkipped: false
+            }
+          ]
         },
-        plugins: {
-          legend: {
-            labels: {
-              color: '#f0ebe3'
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: { color: '#8a8278' },
+              grid: { color: 'rgba(138,130,120,0.2)' }
+            },
+            x: {
+              ticks: { color: '#8a8278' },
+              grid: { display: false }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: {
+                color: '#f0ebe3'
+              }
             }
           }
         }
-      }
-    });
+      });
+      return;
+    }
+
+    chartInstance.data.datasets[0].data = nextData;
+    chartInstance.update('none');
   };
 
   const loadDashboard = async () => {
+    if (dashboardLoadInFlight) return;
+    dashboardLoadInFlight = true;
+
     const pais = filterPais.value.trim();
     const order = sortFecha.value;
 
-    const [statsRes, rowsRes] = await Promise.all([
-      request('/stats'),
-      request(`/respuestas?order=${encodeURIComponent(order)}&pais=${encodeURIComponent(pais)}`)
-    ]);
+    try {
+      const [statsRes, rowsRes] = await Promise.all([
+        request('/stats'),
+        request(`/respuestas?order=${encodeURIComponent(order)}&pais=${encodeURIComponent(pais)}`)
+      ]);
 
-    updateMetrics(statsRes.data);
-    cacheRows = rowsRes.data;
-    renderTable(cacheRows);
+      updateMetrics(statsRes.data);
+      cacheRows = rowsRes.data;
+      renderTable(cacheRows);
+    } finally {
+      dashboardLoadInFlight = false;
+    }
   };
 
   loginForm.addEventListener('submit', (event) => {
@@ -261,12 +283,12 @@ function initAdmin() {
   });
 
   setInterval(() => {
-    if (isAuthed()) {
+    if (isAuthed() && !document.hidden) {
       loadDashboard().catch((error) => {
         console.error('[Admin] Error en refresh automático', error);
       });
     }
-  }, 15000);
+  }, 30000);
 }
 
 initEncuesta();
