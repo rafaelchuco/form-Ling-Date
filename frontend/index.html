@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LingōDate Encuesta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              display: ['Instrument Serif', 'serif'],
+              body: ['DM Sans', 'sans-serif']
+            },
+            colors: {
+              bg: '#110e0b',
+              surface: '#171310',
+              surface2: '#1c1814',
+              surfaceOffset: '#1f1b17',
+              border: '#35302a',
+              divider: '#2a2420',
+              text: '#f0ebe3',
+              muted: '#8a8278',
+              primary: '#f07585',
+              primaryHover: '#e0556a',
+              primaryActive: '#cc3d55',
+              primaryHighlight: '#3d1e24',
+              gold: '#f0b050',
+              goldHighlight: '#3a2e18',
+              success: '#5aad7a'
+            },
+            boxShadow: {
+              soft: '0 4px 12px rgba(0,0,0,0.4)',
+              xlsoft: '0 12px 32px rgba(0,0,0,0.5)'
+            }
+          }
+        }
+      };
+    </script>
+    <style>
+      body {
+        font-family: 'DM Sans', sans-serif;
+        background:
+          radial-gradient(circle at 10% 10%, rgba(240, 117, 133, 0.16), transparent 35%),
+          radial-gradient(circle at 90% 30%, rgba(240, 176, 80, 0.14), transparent 30%),
+          #110e0b;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-bg text-text antialiased">
+    <div class="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+      <header class="mb-10 text-center">
+        <p class="mb-3 inline-block rounded-full border border-primary/40 bg-primaryHighlight px-4 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-primary">
+          Validación Startup
+        </p>
+        <h1 class="font-display text-5xl italic leading-tight text-text sm:text-6xl">
+          Encuesta LingōDate
+        </h1>
+        <p class="mx-auto mt-4 max-w-2xl text-base text-muted sm:text-lg">
+          Ayúdanos a validar necesidad, deseo y demanda para una app de citas global con IA traductora.
+        </p>
+      </header>
+
+      <main class="rounded-3xl border border-border bg-surface/95 p-6 shadow-xlsoft backdrop-blur sm:p-8">
+        <form id="encuestaForm" class="space-y-8">
+          <section class="rounded-2xl border border-divider bg-surface2 p-5">
+            <h2 class="mb-4 font-display text-3xl italic text-text">Datos generales</h2>
+            <div class="grid gap-4 md:grid-cols-2">
+              <label class="flex flex-col gap-2 text-sm">
+                <span>1. Nombre</span>
+                <input id="nombre" type="text" required class="rounded-xl border border-border bg-surfaceOffset px-4 py-3 outline-none focus:border-primary" />
+              </label>
+              <label class="flex flex-col gap-2 text-sm">
+                <span>2. Edad</span>
+                <input id="edad" type="number" min="18" max="100" required class="rounded-xl border border-border bg-surfaceOffset px-4 py-3 outline-none focus:border-primary" />
+              </label>
+              <label class="md:col-span-2 flex flex-col gap-2 text-sm">
+                <span>3. País</span>
+                <input id="pais" type="text" required class="rounded-xl border border-border bg-surfaceOffset px-4 py-3 outline-none focus:border-primary" />
+              </label>
+            </div>
+          </section>
+
+          <section class="rounded-2xl border border-divider bg-surface2 p-5">
+            <h2 class="mb-4 font-display text-3xl italic text-text">Necesidad</h2>
+            <div class="grid gap-4 md:grid-cols-2">
+              <label class="flex flex-col gap-2 text-sm">
+                <span>4. ¿Has usado apps de citas?</span>
+                <select id="ha_usado_apps_citas" required class="rounded-xl border border-border bg-surfaceOffset px-4 py-3 outline-none focus:border-primary">
+                  <option value="">Selecciona</option>
+                  <option value="true">Sí</option>
+                  <option value="false">No</option>
+                </select>
+              </label>
+              <label class="flex flex-col gap-2 text-sm">
+                <span>5. ¿Tuviste problemas por idioma?</span>
+                <select id="tuvo_problemas_idioma" required class="rounded-xl border border-border bg-surfaceOffset px-4 py-3 outline-none focus:border-primary">
+                  <option value="">Selecciona</option>
+                  <option value="true">Sí</option>
+                  <option value="false">No</option>
+                </select>
+              </label>
+            </div>
+          </section>
+
+          <section class="rounded-2xl border border-divider bg-surface2 p-5">
+            <h2 class="mb-4 font-display text-3xl italic text-text">Deseo</h2>
+            <div class="grid gap-4 md:grid-cols-2">
+              <label class="flex flex-col gap-2 text-sm">
+                <span>6. ¿Te interesa conocer extranjeros?</span>
+                <select id="interes_conocer_extranjeros" required class="rounded-xl border border-border bg-surfaceOffset px-4 py-3 outline-none focus:border-primary">
+                  <option value="">Selecciona</option>
+                  <option value="true">Sí</option>
+                  <option value="false">No</option>
+                </select>
+              </label>
+              <label class="flex flex-col gap-2 text-sm">
+                <span>7. ¿Qué tan atractiva es una app con IA? (1-5)</span>
+                <input id="interes_app_traduccion" type="number" min="1" max="5" required class="rounded-xl border border-border bg-surfaceOffset px-4 py-3 outline-none focus:border-primary" />
+              </label>
+              <label class="md:col-span-2 flex flex-col gap-2 text-sm">
+                <span>8. ¿Función más útil?</span>
+                <select id="funcion_mas_valiosa" required class="rounded-xl border border-border bg-surfaceOffset px-4 py-3 outline-none focus:border-primary">
+                  <option value="">Selecciona</option>
+                  <option value="chat_traducido">Chat traducido</option>
+                  <option value="voz">Voz</option>
+                  <option value="video">Video</option>
+                  <option value="ia">IA</option>
+                </select>
+              </label>
+            </div>
+          </section>
+
+          <section class="rounded-2xl border border-divider bg-surface2 p-5">
+            <h2 class="mb-4 font-display text-3xl italic text-text">Demanda</h2>
+            <div class="grid gap-4 md:grid-cols-2">
+              <label class="flex flex-col gap-2 text-sm">
+                <span>9. ¿Pagarías?</span>
+                <select id="pagaria" required class="rounded-xl border border-border bg-surfaceOffset px-4 py-3 outline-none focus:border-primary">
+                  <option value="">Selecciona</option>
+                  <option value="true">Sí</option>
+                  <option value="false">No</option>
+                </select>
+              </label>
+              <label class="flex flex-col gap-2 text-sm">
+                <span>10. ¿Cuánto pagarías? (USD)</span>
+                <select id="precio_dispuesto" required class="rounded-xl border border-border bg-surfaceOffset px-4 py-3 outline-none focus:border-primary">
+                  <option value="">Selecciona</option>
+                  <option value="0">0</option>
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="30">30</option>
+                  <option value="50">50</option>
+                </select>
+              </label>
+              <label class="md:col-span-2 flex flex-col gap-2 text-sm">
+                <span>11. ¿Frecuencia de uso esperada?</span>
+                <select id="frecuencia_uso" required class="rounded-xl border border-border bg-surfaceOffset px-4 py-3 outline-none focus:border-primary">
+                  <option value="">Selecciona</option>
+                  <option value="diario">Diario</option>
+                  <option value="semanal">Semanal</option>
+                  <option value="ocasional">Ocasional</option>
+                </select>
+              </label>
+            </div>
+          </section>
+
+          <section class="rounded-2xl border border-divider bg-surface2 p-5">
+            <h2 class="mb-4 font-display text-3xl italic text-text">Validación</h2>
+            <div class="grid gap-4 md:grid-cols-2">
+              <label class="flex flex-col gap-2 text-sm">
+                <span>12. ¿Confianza en app nueva? (1-5)</span>
+                <input id="confianza_app_nueva" type="number" min="1" max="5" required class="rounded-xl border border-border bg-surfaceOffset px-4 py-3 outline-none focus:border-primary" />
+              </label>
+              <label class="flex flex-col gap-2 text-sm">
+                <span>13. ¿Recomendarías?</span>
+                <select id="recomendaria" required class="rounded-xl border border-border bg-surfaceOffset px-4 py-3 outline-none focus:border-primary">
+                  <option value="">Selecciona</option>
+                  <option value="true">Sí</option>
+                  <option value="false">No</option>
+                </select>
+              </label>
+              <label class="md:col-span-2 flex flex-col gap-2 text-sm">
+                <span>14. Comentario</span>
+                <textarea id="comentario" rows="4" class="rounded-xl border border-border bg-surfaceOffset px-4 py-3 outline-none focus:border-primary"></textarea>
+              </label>
+            </div>
+          </section>
+
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <p id="formStatus" class="text-sm text-muted"></p>
+            <button type="submit" class="rounded-full bg-primary px-7 py-3 text-sm font-semibold text-[#1a1510] shadow-soft transition hover:-translate-y-0.5 hover:bg-primaryHover">
+              Enviar encuesta
+            </button>
+          </div>
+        </form>
+      </main>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

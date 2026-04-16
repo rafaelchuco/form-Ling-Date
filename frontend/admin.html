@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin | LingōDate Encuesta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              display: ['Instrument Serif', 'serif'],
+              body: ['DM Sans', 'sans-serif']
+            },
+            colors: {
+              bg: '#110e0b',
+              surface: '#171310',
+              surface2: '#1c1814',
+              surfaceOffset: '#1f1b17',
+              border: '#35302a',
+              divider: '#2a2420',
+              text: '#f0ebe3',
+              muted: '#8a8278',
+              faint: '#5a5550',
+              primary: '#f07585',
+              primaryHover: '#e0556a',
+              gold: '#f0b050',
+              success: '#5aad7a'
+            }
+          }
+        }
+      };
+    </script>
+    <style>
+      body {
+        font-family: 'DM Sans', sans-serif;
+        background:
+          radial-gradient(circle at 12% 10%, rgba(240, 117, 133, 0.14), transparent 35%),
+          radial-gradient(circle at 90% 15%, rgba(240, 176, 80, 0.1), transparent 30%),
+          #110e0b;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-bg text-text antialiased">
+    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <section id="loginSection" class="mx-auto mt-20 max-w-md rounded-3xl border border-border bg-surface p-8 shadow-2xl">
+        <h1 class="mb-2 font-display text-4xl italic">Admin Login</h1>
+        <p class="mb-6 text-sm text-muted">Acceso protegido al panel de resultados.</p>
+        <form id="loginForm" class="space-y-4">
+          <label class="block text-sm">
+            Usuario
+            <input id="user" class="mt-2 w-full rounded-xl border border-border bg-surfaceOffset px-4 py-3 outline-none focus:border-primary" required />
+          </label>
+          <label class="block text-sm">
+            Contraseña
+            <input id="pass" type="password" class="mt-2 w-full rounded-xl border border-border bg-surfaceOffset px-4 py-3 outline-none focus:border-primary" required />
+          </label>
+          <p id="loginStatus" class="text-sm text-rose-400"></p>
+          <button class="w-full rounded-full bg-primary px-6 py-3 text-sm font-semibold text-[#1a1510] transition hover:bg-primaryHover">Entrar</button>
+        </form>
+      </section>
+
+      <section id="dashboardSection" class="hidden space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p class="inline-block rounded-full border border-primary/40 bg-[#3d1e24] px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-primary">Panel en tiempo real</p>
+            <h1 class="mt-2 font-display text-5xl italic">Dashboard LingōDate</h1>
+          </div>
+          <div class="flex gap-3">
+            <button id="exportBtn" class="rounded-full border border-gold/50 bg-gold/10 px-5 py-2 text-sm font-semibold text-gold transition hover:bg-gold/20">Export Excel</button>
+            <button id="logoutBtn" class="rounded-full border border-border px-5 py-2 text-sm font-semibold text-text transition hover:border-primary hover:text-primary">Logout</button>
+          </div>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <article class="rounded-2xl border border-divider bg-surface p-5">
+            <p class="text-xs uppercase tracking-[0.1em] text-faint">Total respuestas</p>
+            <p id="mTotal" class="mt-2 text-3xl font-semibold">0</p>
+          </article>
+          <article class="rounded-2xl border border-divider bg-surface p-5">
+            <p class="text-xs uppercase tracking-[0.1em] text-faint">% interés</p>
+            <p id="mInteres" class="mt-2 text-3xl font-semibold">0%</p>
+          </article>
+          <article class="rounded-2xl border border-divider bg-surface p-5">
+            <p class="text-xs uppercase tracking-[0.1em] text-faint">% pago</p>
+            <p id="mPago" class="mt-2 text-3xl font-semibold">0%</p>
+          </article>
+          <article class="rounded-2xl border border-divider bg-surface p-5">
+            <p class="text-xs uppercase tracking-[0.1em] text-faint">Promedio edad</p>
+            <p id="mEdad" class="mt-2 text-3xl font-semibold">0</p>
+          </article>
+        </div>
+
+        <div class="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
+          <section class="rounded-2xl border border-divider bg-surface p-5">
+            <div class="mb-4 flex flex-wrap items-end gap-3">
+              <label class="text-sm">
+                Filtrar por país
+                <input id="filterPais" placeholder="Ej: México" class="mt-1 block rounded-xl border border-border bg-surfaceOffset px-3 py-2 outline-none focus:border-primary" />
+              </label>
+              <label class="text-sm">
+                Orden fecha
+                <select id="sortFecha" class="mt-1 block rounded-xl border border-border bg-surfaceOffset px-3 py-2 outline-none focus:border-primary">
+                  <option value="desc">Más reciente</option>
+                  <option value="asc">Más antiguo</option>
+                </select>
+              </label>
+              <button id="applyFilter" class="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-[#1a1510] transition hover:bg-primaryHover">Aplicar</button>
+            </div>
+            <div class="overflow-auto">
+              <table class="min-w-full text-sm">
+                <thead>
+                  <tr class="border-b border-divider text-left text-muted">
+                    <th class="px-2 py-3">Fecha</th>
+                    <th class="px-2 py-3">Nombre</th>
+                    <th class="px-2 py-3">Edad</th>
+                    <th class="px-2 py-3">País</th>
+                    <th class="px-2 py-3">Interés</th>
+                    <th class="px-2 py-3">Pagaría</th>
+                    <th class="px-2 py-3">Comentario</th>
+                  </tr>
+                </thead>
+                <tbody id="tablaRespuestas"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="rounded-2xl border border-divider bg-surface p-5">
+            <h2 class="mb-3 font-display text-3xl italic">Pulso de mercado</h2>
+            <p class="mb-4 text-sm text-muted">NECESIDAD · DESEO · DEMANDA</p>
+            <canvas id="statsChart" height="260"></canvas>
+          </section>
+        </div>
+      </section>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
