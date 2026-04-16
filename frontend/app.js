@@ -81,11 +81,17 @@ function initAdmin() {
   const applyFilterBtn = byId('applyFilter');
   const filterPais = byId('filterPais');
   const sortFecha = byId('sortFecha');
+  const prevPageBtn = byId('prevPage');
+  const nextPageBtn = byId('nextPage');
+  const pageInfoEl = byId('pageInfo');
 
   let chartInstance = null;
   let cacheRows = [];
   let lastTableSignature = '';
   let dashboardLoadInFlight = false;
+  let currentPage = 1;
+  const pageSize = 20;
+  let totalPages = 1;
 
   const setAuthedView = (authed) => {
     loginSection.classList.toggle('hidden', authed);
@@ -125,6 +131,16 @@ function initAdmin() {
         `;
       })
       .join('');
+  };
+
+  const updatePaginationUI = () => {
+    if (pageInfoEl) {
+      pageInfoEl.textContent = `Página ${currentPage} de ${totalPages}`;
+    }
+    if (prevPageBtn) prevPageBtn.disabled = currentPage <= 1;
+    if (nextPageBtn) nextPageBtn.disabled = currentPage >= totalPages;
+    if (prevPageBtn) prevPageBtn.classList.toggle('opacity-50', currentPage <= 1);
+    if (nextPageBtn) nextPageBtn.classList.toggle('opacity-50', currentPage >= totalPages);
   };
 
   const updateMetrics = (stats) => {
@@ -202,12 +218,17 @@ function initAdmin() {
     try {
       const [statsRes, rowsRes] = await Promise.all([
         request('/stats'),
-        request(`/respuestas?order=${encodeURIComponent(order)}&pais=${encodeURIComponent(pais)}`)
+        request(
+          `/respuestas?order=${encodeURIComponent(order)}&pais=${encodeURIComponent(pais)}&page=${currentPage}&pageSize=${pageSize}`
+        )
       ]);
 
       updateMetrics(statsRes.data);
       cacheRows = rowsRes.data;
+      totalPages = rowsRes.totalPages || 1;
+      if (currentPage > totalPages) currentPage = totalPages;
       renderTable(cacheRows);
+      updatePaginationUI();
     } finally {
       dashboardLoadInFlight = false;
     }
@@ -238,11 +259,32 @@ function initAdmin() {
   });
 
   applyFilterBtn.addEventListener('click', () => {
+    currentPage = 1;
     loadDashboard().catch((error) => {
       console.error('[Admin] Error aplicando filtros', error);
       alert(error.message);
     });
   });
+
+  if (prevPageBtn) {
+    prevPageBtn.addEventListener('click', () => {
+      if (currentPage <= 1) return;
+      currentPage -= 1;
+      loadDashboard().catch((error) => {
+        console.error('[Admin] Error cargando página anterior', error);
+      });
+    });
+  }
+
+  if (nextPageBtn) {
+    nextPageBtn.addEventListener('click', () => {
+      if (currentPage >= totalPages) return;
+      currentPage += 1;
+      loadDashboard().catch((error) => {
+        console.error('[Admin] Error cargando página siguiente', error);
+      });
+    });
+  }
 
   exportBtn.addEventListener('click', () => {
     if (!cacheRows.length) {
@@ -280,6 +322,7 @@ function initAdmin() {
   }
 
   setAuthedView(true);
+  updatePaginationUI();
   loadDashboard().catch((error) => {
     console.error('[Admin] Error en carga inicial de dashboard', error);
     alert(error.message);

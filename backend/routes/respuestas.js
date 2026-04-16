@@ -146,25 +146,45 @@ router.post('/respuestas', async (req, res) => {
 router.get('/respuestas', async (req, res) => {
   try {
     const { pais, order = 'desc' } = req.query;
-    logInfo(req, 'GET /respuestas received', { pais: pais || null, order });
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const pageSize = Math.min(100, Math.max(5, parseInt(req.query.pageSize, 10) || 20));
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
 
-    let query = supabase.from(TABLE_NAME).select('*');
+    logInfo(req, 'GET /respuestas received', {
+      pais: pais || null,
+      order,
+      page,
+      pageSize
+    });
+
+    let query = supabase.from(TABLE_NAME).select('*', { count: 'exact' });
 
     if (pais && String(pais).trim()) {
       query = query.ilike('pais', `%${String(pais).trim()}%`);
     }
 
-    query = query.order('created_at', { ascending: order === 'asc' });
+    query = query.order('created_at', { ascending: order === 'asc' }).range(from, to);
 
-    const { data, error } = await query;
+    const { data, count, error } = await query;
     if (error) {
       logError(req, 'GET /respuestas supabase_select_failed', error);
       throw error;
     }
 
-    logInfo(req, 'GET /respuestas ok', { total: data.length });
+    const total = count ?? data.length;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-    return res.json({ ok: true, total: data.length, data });
+    logInfo(req, 'GET /respuestas ok', { total, page, pageSize, returned: data.length });
+
+    return res.json({
+      ok: true,
+      total,
+      page,
+      pageSize,
+      totalPages,
+      data
+    });
   } catch (error) {
     logError(req, 'GET /respuestas failed', error);
     return res.status(500).json({
