@@ -148,6 +148,12 @@ function initAdmin() {
     byId('mInteres').textContent = `${stats.porcentaje_interes}%`;
     byId('mPago').textContent = `${stats.porcentaje_pago}%`;
     byId('mEdad').textContent = stats.promedio_edad;
+    const precioEl = byId('mPrecio');
+    if (precioEl) {
+      const rounded = Number(stats.precio_recomendado_redondeado || 0);
+      const avg = Number(stats.precio_promedio_pago || 0);
+      precioEl.textContent = rounded > 0 ? `$${rounded} (avg $${avg.toFixed(2)})` : '$0';
+    }
 
     const chartNode = byId('statsChart');
     if (!chartNode) return;

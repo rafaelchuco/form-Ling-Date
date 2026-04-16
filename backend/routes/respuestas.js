@@ -207,7 +207,7 @@ router.get('/stats', async (_req, res) => {
     const { data, error } = await supabase
       .from(TABLE_NAME)
       .select(
-        'edad, ha_usado_apps_citas, tuvo_problemas_idioma, interes_conocer_extranjeros, pagaria'
+        'edad, ha_usado_apps_citas, tuvo_problemas_idioma, interes_conocer_extranjeros, pagaria, precio_dispuesto'
       );
 
     if (error) {
@@ -226,13 +226,25 @@ router.get('/stats', async (_req, res) => {
           porcentaje_problema_idioma: 0,
           porcentaje_interes: 0,
           porcentaje_pago: 0,
-          promedio_edad: 0
+          promedio_edad: 0,
+          precio_promedio_pago: 0,
+          precio_recomendado_redondeado: 0
         }
       });
     }
 
     const countTrue = (field) => data.filter((row) => row[field] === true).length;
     const averageAge = data.reduce((acc, row) => acc + Number(row.edad || 0), 0) / total;
+    const payingPrices = data
+      .filter((row) => row.pagaria === true)
+      .map((row) => Number(row.precio_dispuesto))
+      .filter((price) => Number.isFinite(price) && price > 0);
+
+    const averagePrice =
+      payingPrices.length > 0
+        ? payingPrices.reduce((acc, price) => acc + price, 0) / payingPrices.length
+        : 0;
+    const roundedPrice = averagePrice > 0 ? Math.round(averagePrice / 5) * 5 : 0;
     const pct = (count) => Number(((count / total) * 100).toFixed(2));
 
     return res.json({
@@ -243,7 +255,9 @@ router.get('/stats', async (_req, res) => {
         porcentaje_problema_idioma: pct(countTrue('tuvo_problemas_idioma')),
         porcentaje_interes: pct(countTrue('interes_conocer_extranjeros')),
         porcentaje_pago: pct(countTrue('pagaria')),
-        promedio_edad: Number(averageAge.toFixed(2))
+        promedio_edad: Number(averageAge.toFixed(2)),
+        precio_promedio_pago: Number(averagePrice.toFixed(2)),
+        precio_recomendado_redondeado: roundedPrice
       }
     });
   } catch (error) {
