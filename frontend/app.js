@@ -161,6 +161,9 @@ function initAdmin() {
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          resizeDelay: 200,
+          animation: false,
+          devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
           scales: {
             y: {
               beginAtZero: true,
