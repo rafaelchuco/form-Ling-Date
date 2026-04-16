@@ -103,6 +103,23 @@ Este proyecto ya está preparado para Render con blueprint en [render.yaml](rend
 2. Abre `https://TU-SERVICIO.onrender.com/index.html` para la encuesta.
 3. Abre `https://TU-SERVICIO.onrender.com/admin.html` para el panel admin.
 
+### Logs en Render para depuración
+
+1. En Render entra a tu servicio -> **Logs**.
+2. Envía una encuesta desde `index.html`.
+3. Busca líneas como:
+	- `[HTTP] ... method=POST path=/respuestas status=201`
+	- `[API] ... POST /respuestas inserted`
+4. Si falla, verás `[API_ERROR]` con `code`, `details`, `hint` y `requestId`.
+5. Ese `requestId` también aparece en el error del frontend para cruzar exactamente el fallo en logs.
+
+Checks rápidos si no llegan respuestas al admin:
+
+- Confirma `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` en Render.
+- Verifica que `POST /respuestas` devuelva `201`.
+- Verifica que `GET /respuestas` y `GET /stats` devuelvan `200`.
+- Revisa en Supabase la tabla `public.respuestas_encuesta`.
+
 ### Recomendaciones de producción
 
 - Rota la `SUPABASE_SERVICE_ROLE_KEY` si fue compartida fuera de Render.

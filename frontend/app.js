@@ -18,7 +18,9 @@ async function request(path, options = {}) {
 
   const data = await response.json();
   if (!response.ok) {
-    throw new Error(data.message || 'Error de red');
+    const backendErrors = Array.isArray(data.errors) ? `: ${data.errors.join(', ')}` : '';
+    const requestId = data.requestId ? ` (requestId: ${data.requestId})` : '';
+    throw new Error((data.message || 'Error de red') + backendErrors + requestId);
   }
   return data;
 }
@@ -60,6 +62,7 @@ function initEncuesta() {
       statusEl.className = 'text-sm text-success';
       statusEl.textContent = 'Respuesta enviada. ¡Gracias por participar!';
     } catch (error) {
+      console.error('[Encuesta] Error enviando respuesta', error);
       statusEl.className = 'text-sm text-rose-400';
       statusEl.textContent = error.message;
     }
@@ -195,6 +198,7 @@ function initAdmin() {
       loginStatus.textContent = '';
       setAuthedView(true);
       loadDashboard().catch((error) => {
+        console.error('[Admin] Error al cargar dashboard tras login', error);
         loginStatus.textContent = error.message;
       });
       return;
@@ -210,6 +214,7 @@ function initAdmin() {
 
   applyFilterBtn.addEventListener('click', () => {
     loadDashboard().catch((error) => {
+      console.error('[Admin] Error aplicando filtros', error);
       alert(error.message);
     });
   });
@@ -251,12 +256,15 @@ function initAdmin() {
 
   setAuthedView(true);
   loadDashboard().catch((error) => {
+    console.error('[Admin] Error en carga inicial de dashboard', error);
     alert(error.message);
   });
 
   setInterval(() => {
     if (isAuthed()) {
-      loadDashboard().catch(() => {});
+      loadDashboard().catch((error) => {
+        console.error('[Admin] Error en refresh automático', error);
+      });
     }
   }, 15000);
 }

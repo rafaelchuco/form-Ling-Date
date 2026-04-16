@@ -4,6 +4,21 @@ const supabase = require('../config/supabase');
 const router = express.Router();
 const TABLE_NAME = 'respuestas_encuesta';
 
+function logInfo(req, message, extra = {}) {
+  const requestId = req.requestId || 'n/a';
+  console.log(`[API] id=${requestId} ${message}`, extra);
+}
+
+function logError(req, message, error) {
+  const requestId = req.requestId || 'n/a';
+  console.error(`[API_ERROR] id=${requestId} ${message}`, {
+    message: error?.message,
+    code: error?.code,
+    details: error?.details,
+    hint: error?.hint
+  });
+}
+
 function parseBoolean(value) {
   if (value === true || value === false) return value;
   if (typeof value === 'string') {
@@ -83,9 +98,12 @@ function validatePayload(body) {
 
 router.post('/respuestas', async (req, res) => {
   try {
+    logInfo(req, 'POST /respuestas received');
+
     const { payload, errors } = validatePayload(req.body);
 
     if (errors.length > 0) {
+      logInfo(req, 'POST /respuestas validation_failed', { errors });
       return res.status(400).json({
         ok: false,
         message: 'Validación fallida',
@@ -99,14 +117,28 @@ router.post('/respuestas', async (req, res) => {
       .select('*')
       .single();
 
-    if (error) throw error;
+    if (error) {
+      logError(req, 'POST /respuestas supabase_insert_failed', error);
+      throw error;
+    }
+
+    logInfo(req, 'POST /respuestas inserted', {
+      id: data.id,
+      pais: data.pais,
+      edad: data.edad
+    });
 
     return res.status(201).json({ ok: true, data });
   } catch (error) {
+    logError(req, 'POST /respuestas failed', error);
     return res.status(500).json({
       ok: false,
       message: 'No se pudo guardar la respuesta',
-      error: error.message
+      error: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      requestId: req.requestId || null
     });
   }
 });
@@ -114,6 +146,7 @@ router.post('/respuestas', async (req, res) => {
 router.get('/respuestas', async (req, res) => {
   try {
     const { pais, order = 'desc' } = req.query;
+    logInfo(req, 'GET /respuestas received', { pais: pais || null, order });
 
     let query = supabase.from(TABLE_NAME).select('*');
 
@@ -124,27 +157,43 @@ router.get('/respuestas', async (req, res) => {
     query = query.order('created_at', { ascending: order === 'asc' });
 
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) {
+      logError(req, 'GET /respuestas supabase_select_failed', error);
+      throw error;
+    }
+
+    logInfo(req, 'GET /respuestas ok', { total: data.length });
 
     return res.json({ ok: true, total: data.length, data });
   } catch (error) {
+    logError(req, 'GET /respuestas failed', error);
     return res.status(500).json({
       ok: false,
       message: 'No se pudieron listar las respuestas',
-      error: error.message
+      error: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      requestId: req.requestId || null
     });
   }
 });
 
 router.get('/stats', async (_req, res) => {
   try {
+    const req = _req;
+    logInfo(req, 'GET /stats received');
+
     const { data, error } = await supabase
       .from(TABLE_NAME)
       .select(
         'edad, ha_usado_apps_citas, tuvo_problemas_idioma, interes_conocer_extranjeros, pagaria'
       );
 
-    if (error) throw error;
+    if (error) {
+      logError(req, 'GET /stats supabase_select_failed', error);
+      throw error;
+    }
 
     const total = data.length;
 
@@ -178,10 +227,15 @@ router.get('/stats', async (_req, res) => {
       }
     });
   } catch (error) {
+    logError(_req, 'GET /stats failed', error);
     return res.status(500).json({
       ok: false,
       message: 'No se pudieron calcular las métricas',
-      error: error.message
+      error: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      requestId: _req.requestId || null
     });
   }
 });
