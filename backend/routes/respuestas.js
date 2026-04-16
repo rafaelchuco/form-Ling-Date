@@ -207,7 +207,7 @@ router.get('/stats', async (_req, res) => {
     const { data, error } = await supabase
       .from(TABLE_NAME)
       .select(
-        'edad, ha_usado_apps_citas, tuvo_problemas_idioma, interes_conocer_extranjeros, pagaria, precio_dispuesto'
+        'edad, ha_usado_apps_citas, tuvo_problemas_idioma, interes_conocer_extranjeros, pagaria, precio_dispuesto, funcion_mas_valiosa, frecuencia_uso'
       );
 
     if (error) {
@@ -228,7 +228,30 @@ router.get('/stats', async (_req, res) => {
           porcentaje_pago: 0,
           promedio_edad: 0,
           precio_promedio_pago: 0,
-          precio_recomendado_redondeado: 0
+          precio_recomendado_redondeado: 0,
+          distribucion_pago: {
+            si: 0,
+            no: 0
+          },
+          distribucion_interes: {
+            si: 0,
+            no: 0
+          },
+          distribucion_problema_idioma: {
+            si: 0,
+            no: 0
+          },
+          distribucion_funcion_mas_valiosa: {
+            chat_traducido: 0,
+            voz: 0,
+            video: 0,
+            ia: 0
+          },
+          distribucion_frecuencia_uso: {
+            diario: 0,
+            semanal: 0,
+            ocasional: 0
+          }
         }
       });
     }
@@ -246,6 +269,7 @@ router.get('/stats', async (_req, res) => {
         : 0;
     const roundedPrice = averagePrice > 0 ? Math.round(averagePrice / 5) * 5 : 0;
     const pct = (count) => Number(((count / total) * 100).toFixed(2));
+    const countByValue = (field, value) => data.filter((row) => row[field] === value).length;
 
     return res.json({
       ok: true,
@@ -257,7 +281,30 @@ router.get('/stats', async (_req, res) => {
         porcentaje_pago: pct(countTrue('pagaria')),
         promedio_edad: Number(averageAge.toFixed(2)),
         precio_promedio_pago: Number(averagePrice.toFixed(2)),
-        precio_recomendado_redondeado: roundedPrice
+        precio_recomendado_redondeado: roundedPrice,
+        distribucion_pago: {
+          si: countTrue('pagaria'),
+          no: total - countTrue('pagaria')
+        },
+        distribucion_interes: {
+          si: countTrue('interes_conocer_extranjeros'),
+          no: total - countTrue('interes_conocer_extranjeros')
+        },
+        distribucion_problema_idioma: {
+          si: countTrue('tuvo_problemas_idioma'),
+          no: total - countTrue('tuvo_problemas_idioma')
+        },
+        distribucion_funcion_mas_valiosa: {
+          chat_traducido: countByValue('funcion_mas_valiosa', 'chat_traducido'),
+          voz: countByValue('funcion_mas_valiosa', 'voz'),
+          video: countByValue('funcion_mas_valiosa', 'video'),
+          ia: countByValue('funcion_mas_valiosa', 'ia')
+        },
+        distribucion_frecuencia_uso: {
+          diario: countByValue('frecuencia_uso', 'diario'),
+          semanal: countByValue('frecuencia_uso', 'semanal'),
+          ocasional: countByValue('frecuencia_uso', 'ocasional')
+        }
       }
     });
   } catch (error) {

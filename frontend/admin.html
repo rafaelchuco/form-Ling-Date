@@ -157,6 +157,49 @@
             </div>
           </section>
         </div>
+
+        <section class="rounded-2xl border border-divider bg-surface p-5">
+          <div class="mb-5 flex items-end justify-between gap-3">
+            <div>
+              <h2 class="font-display text-3xl italic">Distribución de respuestas</h2>
+              <p class="mt-1 text-sm text-muted">Gráficos de pastel para leer tendencias rápido.</p>
+            </div>
+          </div>
+          <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <article class="rounded-2xl border border-divider bg-surfaceOffset p-4">
+              <p class="text-xs uppercase tracking-[0.1em] text-faint">¿Pagaría?</p>
+              <div class="mt-4 h-56">
+                <canvas id="chartPago" class="!h-full !w-full"></canvas>
+              </div>
+            </article>
+            <article class="rounded-2xl border border-divider bg-surfaceOffset p-4">
+              <p class="text-xs uppercase tracking-[0.1em] text-faint">Interés por conocer extranjeros</p>
+              <div class="mt-4 h-56">
+                <canvas id="chartInteres" class="!h-full !w-full"></canvas>
+              </div>
+            </article>
+            <article class="rounded-2xl border border-divider bg-surfaceOffset p-4">
+              <p class="text-xs uppercase tracking-[0.1em] text-faint">Problemas de idioma</p>
+              <div class="mt-4 h-56">
+                <canvas id="chartIdioma" class="!h-full !w-full"></canvas>
+              </div>
+            </article>
+            <article class="rounded-2xl border border-divider bg-surfaceOffset p-4">
+              <p class="text-xs uppercase tracking-[0.1em] text-faint">Función más valiosa</p>
+              <div class="mt-4 h-56">
+                <canvas id="chartFuncion" class="!h-full !w-full"></canvas>
+              </div>
+            </article>
+          </div>
+          <div class="mt-4 grid gap-4 md:grid-cols-2">
+            <article class="rounded-2xl border border-divider bg-surfaceOffset p-4">
+              <p class="text-xs uppercase tracking-[0.1em] text-faint">Frecuencia de uso</p>
+              <div class="mt-4 h-56">
+                <canvas id="chartFrecuencia" class="!h-full !w-full"></canvas>
+              </div>
+            </article>
+          </div>
+        </section>
       </section>
     </div>
 

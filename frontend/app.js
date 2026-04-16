@@ -86,6 +86,11 @@ function initAdmin() {
   const pageInfoEl = byId('pageInfo');
 
   let chartInstance = null;
+  let chartPagoInstance = null;
+  let chartInteresInstance = null;
+  let chartIdiomaInstance = null;
+  let chartFuncionInstance = null;
+  let chartFrecuenciaInstance = null;
   let cacheRows = [];
   let lastTableSignature = '';
   let dashboardLoadInFlight = false;
@@ -214,6 +219,103 @@ function initAdmin() {
     chartInstance.update('none');
   };
 
+  const createOrUpdateDoughnut = (instance, canvasId, labels, data, colors) => {
+    const chartNode = byId(canvasId);
+    if (!chartNode) return instance;
+
+    if (!instance) {
+      return new Chart(chartNode, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [
+            {
+              data,
+              backgroundColor: colors,
+              borderWidth: 0,
+              hoverOffset: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          cutout: '62%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: '#f0ebe3',
+                boxWidth: 10,
+                boxHeight: 10,
+                usePointStyle: true,
+                pointStyle: 'circle'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    instance.data.labels = labels;
+    instance.data.datasets[0].data = data;
+    instance.data.datasets[0].backgroundColor = colors;
+    instance.update('none');
+    return instance;
+  };
+
+  const updateBreakdownCharts = (stats) => {
+    chartPagoInstance = createOrUpdateDoughnut(
+      chartPagoInstance,
+      'chartPago',
+      ['Sí', 'No'],
+      [stats.distribucion_pago?.si || 0, stats.distribucion_pago?.no || 0],
+      ['#5aad7a', '#2a2420']
+    );
+
+    chartInteresInstance = createOrUpdateDoughnut(
+      chartInteresInstance,
+      'chartInteres',
+      ['Sí', 'No'],
+      [stats.distribucion_interes?.si || 0, stats.distribucion_interes?.no || 0],
+      ['#f07585', '#2a2420']
+    );
+
+    chartIdiomaInstance = createOrUpdateDoughnut(
+      chartIdiomaInstance,
+      'chartIdioma',
+      ['Sí', 'No'],
+      [stats.distribucion_problema_idioma?.si || 0, stats.distribucion_problema_idioma?.no || 0],
+      ['#f0b050', '#2a2420']
+    );
+
+    chartFuncionInstance = createOrUpdateDoughnut(
+      chartFuncionInstance,
+      'chartFuncion',
+      ['Chat traducido', 'Voz', 'Video', 'IA'],
+      [
+        stats.distribucion_funcion_mas_valiosa?.chat_traducido || 0,
+        stats.distribucion_funcion_mas_valiosa?.voz || 0,
+        stats.distribucion_funcion_mas_valiosa?.video || 0,
+        stats.distribucion_funcion_mas_valiosa?.ia || 0
+      ],
+      ['#f07585', '#f0b050', '#5aad7a', '#e0556a']
+    );
+
+    chartFrecuenciaInstance = createOrUpdateDoughnut(
+      chartFrecuenciaInstance,
+      'chartFrecuencia',
+      ['Diario', 'Semanal', 'Ocasional'],
+      [
+        stats.distribucion_frecuencia_uso?.diario || 0,
+        stats.distribucion_frecuencia_uso?.semanal || 0,
+        stats.distribucion_frecuencia_uso?.ocasional || 0
+      ],
+      ['#f07585', '#f0b050', '#5aad7a']
+    );
+  };
+
   const loadDashboard = async () => {
     if (dashboardLoadInFlight) return;
     dashboardLoadInFlight = true;
@@ -230,6 +332,7 @@ function initAdmin() {
       ]);
 
       updateMetrics(statsRes.data);
+      updateBreakdownCharts(statsRes.data);
       cacheRows = rowsRes.data;
       totalPages = rowsRes.totalPages || 1;
       if (currentPage > totalPages) currentPage = totalPages;
