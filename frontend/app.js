@@ -152,7 +152,7 @@ function initAdmin() {
     if (precioEl) {
       const rounded = Number(stats.precio_recomendado_redondeado || 0);
       const avg = Number(stats.precio_promedio_pago || 0);
-      precioEl.textContent = rounded > 0 ? `$${rounded} (avg $${avg.toFixed(2)})` : '$0';
+      precioEl.textContent = rounded > 0 ? `S/ ${rounded} (avg S/ ${avg.toFixed(2)})` : 'S/ 0';
     }
 
     const chartNode = byId('statsChart');
